@@ -1,5 +1,206 @@
 # 201930403 김동빈
 
+## 2023.04.06(6주차)
+### 컴포넌트 추출<br>
+1. 복잡한 컴포넌트를 쪼개서 여러 개의 컴포넌트로 나눌 수도 있다.
+1. 큰 컴포넌트에서 일부를 추출해서 새로운 컴포넌트를 만드는 것
+
+```JavaScript
+funtion Comment(props) {// Comment는 댓글 표시 컴포넌트.
+    return( //내부에는 이미지, 이름, 댓글과 작성일이 포함되어 있다.
+        <div className="comment">
+            <div className="user-info">
+                <img className="avatar"
+                    src={props.author.avatarUrl}
+                    alt={props.author.name}
+                    />
+                    <div className="user-info-name">
+                        {props.author.name}
+                        </div>
+                    </div>
+
+                    <div className="comment-text">
+                        {props.text}
+                    </div>
+
+                    <div className="comment-date">
+                        {formatDate(props.date)}
+                    </div>
+                </div>
+    );
+}
+```
+
+첫 번째로 이미지 부분을 Avatar 컴포넌트로 추출
+
+```JavaScript
+funtion Avatar(props) {
+    return(
+            <img className="avatar"
+                src={props.author.avatarUrl}
+                alt={props.author.name}
+             />  
+    );
+}
+```
+
+추출 후 다시 결합한 UserInfo를 Comment컴포넌트 반영하면, 
+다음과 같은 모습이 된다.
+
+```JavaScript
+    funtion Comment(props) {
+        return(
+            <div className="comment">
+                <UserInfo user={props.author} />
+                <div className="comment-text">
+                    {props.text}
+                </div>
+                <div className="comment-date">
+                    {formatDate(props.date)}
+                </div>
+            </div>
+        );
+    }
+```
+
+처음에 비해서 가독성이 높아진 것을 확인할 수 있다.<br>
+* 기본적으로는 한 컴포넌트에 하나의 기능을 수행하도록 설계하는 것이 바람직하다.
+
+그 다음은 사용자 정보 부분을 추출한다.<br>
+React컴포넌트 이름은 Camel notatio을 사용한다.<br>
+
+
+```JavaScript
+  funtion UserInfo(props) {//컴포넌트 이름은 UserInfo로 한다.
+    return(//UserInfo 안에 Avatar 컴포넌트를 넣어서 완성시킨다.
+         <div className="user-info">
+            <Avatar user={props.user} />
+                <div className="user-info-name">
+                    {props.user.name}
+                </div>
+            </div>
+        );
+    }
+```
+
+이번에는 Comment를 범용으로 사용할 수 있도록 이름과 코멘트를 props로 받도록 수정.<br>
+
+```JavaScript
+    function Comment(props){
+        return(
+        <div style={styles.wrapper}>
+            <div style={styles.imageContainer}>
+                <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
+                    alt="프로필 이미지"
+                    style={styles.image}
+                />
+            </div>
+            <div style={styles.contentContainer}>
+                <span style={styles.nameText}>{props.name}</span>
+                <span style={styles.commentText}>{props.comment}</span>
+            </div>
+        </div>
+        )
+    }
+```
+
+하지만 props로 전달 받은 것이 아직 없기 때문에 지금까지 한걸로는 아무것도 출력되지 않는다.<br>
+CommentList를 이용해서 Comment에 props를 전달해보자
+
+```JavaScript
+    const comments = [
+        {
+            name: "김동빈",
+            comment: "안녕하세요, 김동빈 입니다."
+        },
+        {
+            name: "김동빈1",
+            comment: "안녕하세요, 김동빈1 입니다."
+        },
+        {
+            name: "김동빈2",
+            comment: "안녕하세요, 김동빈2 입니다."
+        },
+    ]
+
+    function CommentList(props){
+        return(
+            <div>
+            {comments.map((foo) => {
+                return (
+                    <Comment name={foo.name} comment={foo.comment} />
+                )
+            })}
+            </div>
+        )
+    }
+```
+별도의 객체로 받아 컴포넌트에서는 이것을 분리하여 출력하도록 해야한다.<br>
+이때 사용하는 함수가 map()함수이다.<br>
+
+
+### State란?
+1. State는 리액트 컴포넌트의 상태를 의미한다.<br>
+1. 상태의 의미는 정상인지 비정상인지가 아니라 <b>컴포넌트의 데이터</b>를 의미한다.<br>
+1. 정확히는 컴포넌트의 <b>변경가능한 데이터</b>를 의미한다.<br>
+1. State가 변하면 다시 렌더링이 되기 떄문에 렌더링과 관련된 값만 state에 포함시켜야 한다.
+
+### state의 특징
+- 리액트 만의 특별한 형태가 아닌 단지 <b>자바스크립트 객체</b>일 뿐이다.<br>
+
+```JavaScript
+    class LikeButton extends React.Component {
+        //LikeButton은 class 컴포넌트이다.
+        constrctor(props) {//constructor는 생성자
+            super(props);
+
+            this.state = { //this.state가 현 컴포넌트의 state이다.
+//리액트에 있는 컴포넌트에 state인지 내 state인지 모르기 때문에 this를 붙인다.
+                liked: false
+            };
+        }
+
+        ...
+    }
+```
+
+- 함수형 에서는 useState()라는 함수를 사용한다.<br>
+- state는 변경은 가능하다고 했지만 직접 수정해서는 안된다.<br>
+    - 불가능 하다고 생각하는 것이 좋다.<br>
+
+- state를 변경하고자 할 때는 setstate()함수를 사용한다.
+
+```JavaScript
+    // state를 직접 수정(잘못된 사용법)
+    this.state = {
+        name : 'Inje'
+    };
+    // setState 함수를 통한 수정(정상적인 사용법)
+    this.setState({
+        name: 'Injs'
+    });
+```
+### 개념 익히기
+
+|용어|설명|
+|------|---|
+|element|재료|
+|component|빵틀|
+|instance|재료를 빵틀에 넣고 만든 빵|
+
+### 생명주기에 대해 알아보기
+1. 생명주기는 컴포넌트의 생성 시점, 사용 시점, 종료 시점을 나타내는 것.
+1. constructor가 실행 되면서 컴포넌트가 생성된다.
+1. 생성 직후 componentDidMount() 함수가 호출된다.
+1. 컴포넌트가 소멸하기 전까지 여러 번 렌더링 한다.
+1. 렌더링은 props, setState(), forceUpdate()에 의해 상태가 변경되면 이루어진다.
+1. 그리고 렌더링이 끝나면 componentDinUpdate() 함수가 호출된다.
+1. 마지막으로 컴포넌트가 언마운트 되면 compomentWillUnmount()함수가 호출된다.
+
+***
+***
+
 ## 2023.03.30(5주차)
 ### 엘리먼트에 대해 알아보기<br>
 ### 엘리먼트의 정의
@@ -83,8 +284,7 @@ funtion Welcome(props){
 - 읽기 전용이라 변경할 수 없다.<br>
 - 속성이 다른 엘리먼트를 생성하려면 새로운 props를 컴포넌트에 전달하면 된다.<br>
 - pure함수는 인수로 받은 정보가 함수 내부에서도 변하지 않는 함수.<br>
-- impure함수는 인수로 받은 정보가 내부에서 변하는 함수.
-
+- impure함수는 인수로 받은 정보가 내부에서 변하는 함수.<br>
 
 ***
 ***
