@@ -1,4 +1,206 @@
 # 201930403 김동빈
+## 2023.04.27(9주차)
+### 이벤트 핸들링
+> 이벤트가 발생하면 특별한 함수를 실행함으로써 이벤트를 구현시키고 그 함수를 핸들러라 한다.<br>
+
+DOM에서 클릭 이벤트를 처리하는 예제 코드.
+```JavaScript
+    <button onclick="activate()">
+        Activate
+    </button>
+```
+
+React에서 클릭 이벤트 처리하는 예제 코드.
+```JavaScript
+    <button onClick={activate}> //camalCase
+        Activate
+    </button>
+```
+
+둘의 차이점은<br>
+1. 이벤트 이름이 onclick에서 onClick으로 변경.(Camel case)
+1. 전달하려는 함수는 문자열에서 함수 그대로 전달.
+
+이벤트가 발생했을때 해당 이벤트를 처리하는 함수를 <b>"이벤트 핸들러(Event Handler)"</b> 라고 한다.<br>
+또는 이벤트가 발생하는 것을 계속 듣고 있다는 의미로 <b>"이벤트 리스너(Event Listener)"</b>라고 부르기도 한다.<br>
+
+이벤트 핸들러 추가하는 방법은?
+```JavaScript
+    class Toggle extends React.Component{
+        constructor(props){
+            super(props);
+
+            this.state = { isToggleOn: true };
+//callback에서 'this'를 사용하기 위해서는 바인딩을 필수적으로 해줘야 한다.
+//bind를 사용하지 않으면 this.handleClick은 글로벌 스코프에서 호출되어, undefined으로 사용할 수 없기 때문이다.
+//bind를 사용하지 않으려면 화살표 함수를 사용하는 방법도 있다.
+            this.handleClick = this.handleClick.bind(this);
+        }
+
+        handleClick(){
+            this.setState(prevState => ({
+                isToggleOn: !prevState.isToggleOn
+            }));
+        }
+
+        render(){
+            return(
+//버튼을 클릭하면 이벤트 핸들러 함수인 handleClick()함수를 호출하도록 되어있다.
+                <button onClick = {this.handleClick}>
+                    {this.state.isToggleOn ? '켜짐' : '꺼짐'}
+                </button>
+            );
+        }
+    }
+```
+하지만 클래스 컴포넌트는 이제 거의 사용하지 않기 때문에 이 내용은 참고만 한다.<br>
+
+클래스형을 함수형으로 바꾸면 다음 코드와 같다.<br>
+함수형에서 이벤트 핸들러를 정의하는 방법은 두 가지가 있다.<br>
+함수형에서는 this를 사용하지 않고, onClick에서 바로 HandleClick을 넘기면 된다.<br>
+```JavaScript
+    funcion Toggle(props){
+        const [isToggleOn, setIsToggleOn] = useState(true);
+        // 방법 1. 함수 안에 함수로 정의
+        funtion handleClick(){
+            setIsToggleOn((isToggleOn) => !isToggleOn);;
+        }
+
+        // 방법 2. arrow funtion을 사용하여 정의
+        const handleClick = () => {
+            setIsToggleOn((isToggleOn) => !isToggleOn)
+        }
+        
+        return (
+            <button onClick={handleClick}>
+                {isToggleOn ? "켜짐" : "꺼짐"} //사망연산자
+            </button>
+        )
+    }
+```
+---
+### Arguments 전달하기
+- 함수를 정의할 때는 파라미터(Parameter) 혹은 매개변수, 함수를 사용할 때는 아귀먼트(Argument) 혹은 인수라고 부른다.
+- [이벤트 핸들러](#이벤트-핸들링)에 매개변수를 전달해야 하는 경우도 많다.
+```JavaScript
+    01 <button onClick={(event) => this.deleteItem(id, event)}>삭제하기</button>
+    02 <button onClick={this.deleteItem.bind(this,id)}>삭제하기</button>
+```
+- 위의 코드는 모두 동일한 역할을 하지만 하나는 화살표 함수를, 다른 하나는 bind를 사용했다.
+- event라는 매개변수는 <b>리액트의 이벤트 객체</b>를 의미 한다.
+- 두 방법 모두 첫 번째 매개변수는 id이고 두 번째 매개변수로 event가 전달된다.
+- 첫 번째 코드는 명시적으로 event를 매개변수로 넣어 주었고, <br>두 번째 코드는 id 이후 두번째 매개변수로 event가 자동 전달 된다.
+    - 이 방법은 클래스형에서 사용하는 방법이다.
+
+함수형 컴포넌트에서 이벤트 핸들러에 매개변수를 전달할 때는 다음과 같이 한다.
+```JavaScript
+    function MyButton(props) {
+        const handleDelete = (id, event) => {
+            console.log(id, event.target);
+        }; 
+        
+        return (
+            <button onClick={(event) => handleDelete(1,event)}>삭제하기</button>
+        );
+    }
+```
+---
+### 조건부 렌더링이란?
+여기서 <u>조건이란 우리가 알고 있는 조건문의 조건</u>이다.
+```JavaScript
+    function Greeting(props) {
+        const isLoggendIn = props.isLoggendIn;
+        if (isLoggedIn) {
+            return <UserGreeting />;
+        }
+        return <GuestGreeting />;
+    }
+```
+props로 전달 받은 isLoggedln이 true이면 <UserGreeting />을, false면 <GuestGreeting />을 return한다.<br>
+이와 같은 <b>렌더링을 조건부 렌더링</b>이라고 한다.
+
+---
+
+### 엘리먼트 변수
+렌더링해야 될 컴포넌트를 변수처럼 사용하는 방법이 엘리먼트 변수이다.<br>
+다음 코드처럼 state에 따라 button 변수에 컴포넌트 객체를 저장하여 return문에서 사용하고 있다.
+```JavaScript
+    let buton;
+    if (isLoggedIn) {
+        button = <LogoutButton onClick = {handleLogoutClick} />;
+    } else {
+        button = <LoginButton onClick = {handleLoginClick} />;
+    }
+
+    return (
+        <div>
+            <Greeting isLoggedIn = {isLoggedIn} />
+            {butto}
+        </div>
+    )
+```
+---
+
+### 인라인 조건
+<b>필요한 곳에 조건문을 직접 넣어 사용하는 방법.</b>
+1. 인라인 if
+    - if문을 직접 사용하지 않고, 동일한 효과를 내기 위해 && 논리 연산자를 사용한다.
+    - &&는 and연산자로 모든 조건이 참일때만 참이 된다.
+    - 첫 번째 조건이 거짓이면 두번째 조건은 판단할 필요가 없다.<br>
+    <code>true && expression -> expression<br>false && expression -> false </code>
+    ```JavaScript
+        {unreadMessages.length > 0 &&
+            <h2>
+                현재 {unreadMessages.length}개의 읽지 않은 메시지가 있습니다.
+            </h2>
+        }
+    ```
+    - 판단만 하지 않는 것이고 결과 값은 그대로 리턴된다.
+
+1. 인라인 if-else
+    - 삼항 연산자를 사용한다. <code>조건문 ? 참일 경우 : 거짓일 경우</code>
+    - 문자열이나 엘리먼트를 넣어서 사용할 수도 있다.
+    ```JavaScript
+        funtion UserStatus(props) {
+            return (
+                <div>
+                이 사용자는 현재 <b>{props.isLoggedIn ? '로그인' : '로그인하지 않은'}
+                </b> 상태입니다.
+                </div>
+            )
+        }
+
+        <div>
+            <Greeting isLoggedIn = {isLoggedIn} />
+            {isLoggedIn
+                ? <LogoutButton onClick = {handleLogoutClick} />
+                : <LoginButton onClick = {handleLoginClick} />
+                }
+        </div>
+    ```
+---
+### 컴포넌트 렌더링 막기
+컴포넌트를 렌더링하고 싶지 않을때에는 null을 리턴한다.
+```JavaScript
+    function WarningBanner(props){
+        if (!props.warning) {
+            return null;
+        }
+
+        return (
+            <div>경고!</div>
+        );
+    }
+```
+---
+### 메모
+> 1. React에서는 Pascalcase를 사용하며, 첫 문자를 대문자로 사용한다.<br>
+> 1. 문자와 문자사이에 언더바(_)가 들어가는걸스네이크 함수라고 한다.
+> 1. 배열은 자료구조가 아닌 스택이나 큐 같은 자료를 구현하기 위한것
+
+---
+---
+
 ## 2023.04.13(7주차)
 ### 훅이란 무엇인가?
 1. 클래스형 컴포넌트에서는 생성자(constructor)에서 state를 정의하고,<br> setState() 함수를 통해 state를 업데이트 한다.
