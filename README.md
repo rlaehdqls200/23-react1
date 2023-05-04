@@ -1,4 +1,249 @@
 # 201930403 김동빈
+## 2023.05.04(10주차)
+### 리스트와 키
+ 
+
+|용어|설명|
+|------|---|
+|리스트|자바스크립트의 변수나 객체를 하나의 변수로 묶어 놓은 배열과 같은 것.|
+|키|각 개체나 아이템을 구분할 수 있는 고유한 값을 의미한다.|
+
+- 리액트에서는 배열과 키를 사용하는 반복된 다수의 엘리먼트를 쉽게 랜더링할 수 있다.
+- 여러 개의 컴포넌트 랜더링 하기 위해서는 배열에 들어 있는 엘리먼트를 map()함수를 이용하여 랜더링 한다.
+
+```JavaScript
+/*numbers 배열에 들어있는 각각의 요소를 map()함수를 이용하여 하나씩 추출하여
+2를 곱한 후 doubled라는 배열에 다시 넣는 코드로 일반적인 맵함수이다.*/
+    const doubled = numbers.map((number) => number = 2); 
+```
+
+다음은 리액트에서 map()함수를 사용한 예제이다.
+```JavaScript
+   const numbers = [1, 2, 3, 4, 5];
+   const listItems = numbers.map((number) =>
+   <li>{number}</li>
+   );
+   //이 코드는 numbers의 요소에 2를 곱하는 대신 <li> 태그를 결합해서 리턴하고 있다.
+```
+
+```JavaScript
+   ReactDOM.render(
+    <ul>
+        <li>{1}</li>
+        <li>{2}</li>
+        <li>{3}</li>
+        <li>{4}</li>
+        <li>{5}</li>
+    </ul>,
+    //리턴된 listitems는 <ul> 태그와 결합하여 랜더링 된다. 
+    document.getElementById('root')
+   );
+```
+
+---
+### 기본적인 리스트 컴포넌트
+- 앞서 작성한 코드를 별도의 컴포넌트로 분리하면 다음과 같다.
+- 이 컴포넌트는 props로 받은 숫자를 numbers로 받아 리스트로 랜더링해 준다.
+```JavaScript
+    function NumberList(props){
+        const { numbers } = props;
+
+        const listItems = numbers.map((number) =>
+        <li>{number}</li>
+        );
+        return (
+            <ul>{listItems}</ul>
+        );
+    }
+
+    const numbers = [1, 2, 3, 4, 5];//이거 때문에 key props 오류
+    ReactDOM.render(
+        <NumberList numbers={numbers} />,
+        //맨 윗줄에 props 매개변수에 리턴된다.
+        document.getElementById('root')
+    );
+```
+### key props 오류 
+이 코드를 실행하면 <b>"리스트 아이템에 무조건 키가 있어야 한다"</b> 는 경고 문구가 나온다.<br>
+경고 문구가 나오는 이유는 각각의 아이템에 <b>key props</b>가 없기 때문이다.<br>
+[참고용 코드](#attendancebook클래스에-id와-key값-추가)
+
+---
+### 리스트의 키에 대해 알아보기
+- 리스트에서의 키는 "리스트 에서 아이템을 구별하기 위한 <b>고유한 문자열</b>" 이다.
+- 이 키는 리스트에서 어떤 아이템이 변경, 추가 또는 제거되었는지 구분하기 위해 사용한다.
+- 키는 <b>같은 리스트에</b> 있는 엘리먼트 사이에서만 <b>고유한 값</b>이면 된다.
+
+---
+### 폼이란?
+폼은 일반적으로 사용자로부터 입력을 받기 위한 양식에서 많이 사용된다.
+
+### 제어컴포넌트
+제어 컴포넌트는 사용자가 입력한 값에 접근하고 제어할 수 있도록 해주는 [컴포넌트](#컴포넌트에-대해-알아보기)이다.
+
+```JavaScript
+//사용자의 이름을 입력 받는 HTML폼을 리액트 제어 컴포넌트로 만든 코드
+    function NameForm(props){
+        const [value, setValue] = useState('');
+        //핸들이 두개 있다
+        const handleChange = (event) => {
+            setValue(event.target.value); //useState에 할당
+        }
+        const handleSubmit = (event) => {
+            alert('입력한 이름: ' + value);
+            event.preventDefault();
+        }
+        return (
+             //onChange가 바뀐값을 받고 setValue를 통해 useState에 넣어준다.
+            <form onSubmit={handleSubmit}>
+                <label>
+                    이름:
+                <input type="text" value={value} onChange={handleChange}/>
+                </label>
+                <button type="submit">제출</button>
+            </form> 
+        )
+    }
+//State에서 모든걸 관리해주는걸 알 수 있다
+```
+
+---
+### textarea 태그
+HTML에서는 <.textarea>의 children으로 텍스트가 들어가는 형태이다.
+```HTML
+<textarea>
+    안녕하세요, 여기에 이렇게 텍스트가 들어가게 됩니다.
+</textarea>
+```
+
+리액트에서는 state를 통해 태그의 value라는 attribute를 변경하여 텍스트를 표시한다.
+```JavaScript
+    function RequestForm(props){
+        const [value, setValue] = useState('요청사항을 입력해주세요.');
+
+        const handleChange = (event) => {
+            setValue(event.target.value); 
+        }
+        const handleSubmit = (event) => {
+            alert('입력한 요청사항: ' + value);
+            event.preventDefault();
+        }
+        return (
+            <form onSubmit={handleSubmit}>
+                <label>
+                    이름:
+                <tetarea value={value} onChange={handleChange} />
+                </label>
+                <button type="submit">제출</button>
+            </form> 
+        )
+    }
+```
+---
+### select 태그
+select태그도 textarea와 동일하다.<br>
+```HTML
+    <select>
+    <option value="apple">사과</option>
+    <option value="banana">바나나</option>
+    <option selected value="grape">포도</option> //defult값
+    <option value="watermelon">수박</option>
+    </select>
+```
+
+```JavaScript
+     function FruitSelect(props){
+        const [value, setValue] = useState('grape');//defult값
+
+        const handleChange = (event) => {
+            setValue(event.target.value); //useState에 할당
+        }
+        const handleSubmit = (event) => {
+            alert('선택한 과일: ' + value);
+            event.preventDefault();
+        }
+        return (
+            <form onSubmit={handleSubmit}>
+                <label>
+                    과일을 선택하세요:
+                    <select value={value} onChange={handleChange}>
+                        <option value="apple">사과</option>
+                        <option value="banana">바나나</option>
+                        <option value="grape">포도</option>
+                        <option value="watermelon">수박</option>
+                    </select>
+                </label>
+                <button type="submit">제출</button>
+            </form> 
+        )
+    }
+```
+---
+### File input 태그
+ File input 태그는 그 값이 읽기 전용이기 때문에 리액트에서는 비제어 컴포넌트가 된다.<br>
+
+```HTML
+    <input type = "file" />
+```
+
+---
+### Input Null Value
+- 제어 컴포넌트에 value prop를 정해진 값으로 넣으면 코드를 수정하지 않는 한 입력값을 바꿀 수 없다.
+- 만약 value prop은 넣되 자유롭게 입력할 수 있게 만들고 싶다면 값이 undefind 또는 null을 넣어주면 된다.
+```JavaScript
+    ReactDOM.render(<input value="hi" />, rootNode);
+
+    setTimeout(function() {
+        ReactDOM.render(<input value={null} />, rootNode);
+    }, 1000);
+```
+
+---
+### 메모
+
+>1. 원래는 컴포넌트를 만들었으면 App.js에서 improt를 해서 가져오기 때문에 index.js는 건들 일이 없다.<br>
+*App.js에 컴포넌트가 다 모이기 때문에 수정할건 사실상 App.js밖에 없기 때문
+>1. 인덱스 값도 고유한 값이기 때문에 키값으로 사용해도 된다.<br>
+*하지만 배열에서 아이템의 순서가 바뀔 수 있는 경우에는 키값으로 인덱스를 사용하는 것을 권장하지 않는다.
+>1. 리액트에서는 키를 명시적으로 넣어 주지 않으면 기본적으로 인덱스 값을 키값으로 사용한다. [참조 코드](#index로-키값을-사용하는-경우)
+>1. CH10에서 AttendanceBook클래스에 리스트엔 대괄호[] 사용, 아이템은 중괄호{}를 사용, 여러개 사용시 콤마, 로 구분한다
+>1. [Key props오류](#key-props-오류) CH10에 AttendanceBook클래스에 key props오류를 고치기 위해 다음과 같이 코드에 id와 key값을 준다.
+#### AttendanceBook클래스에 Id와 Key값 추가
+```JavaScript
+        //students 리스트 내부 아이템에 id 추가
+        const students = [
+            {
+            id: 1, //id 추가
+            name: "Inje",
+            },
+            ...
+        ];
+        ----------------------------------------------
+        <ul>
+            {students.map((student) => {
+                return <li>{student.name}</li>;
+            })}
+        </ul>
+        //위 코드를 다음과 같이 수정해 key값을 추가한다.
+        <ul>
+        {students.map((student) => {
+                return <li key ={student.id}> {student.name}</li>;
+            })}
+        </ul>
+```
+#### index로 키값을 사용하는 경우
+```JavaScript
+const todoItems = todos.map((todo, index) =>
+//아이템들의 고유한 ID가 없을 경우에만 사용해야 함
+<li key={ndex}>
+    {todo.text}
+</li>
+//하지만 이 같은 방식은 좋은 방식이 아니기 떄문에 사용하지 않는게 좋음
+);
+```
+---
+---
+
 ## 2023.04.27(9주차)
 ### 이벤트 핸들링
 > 이벤트가 발생하면 특별한 함수를 실행함으로써 이벤트를 구현시키고 그 함수를 핸들러라 한다.<br>
