@@ -10,33 +10,33 @@
 ```JavaScript
     function BoilingVerdict(props) {
         //섭씨온도값을 props로 받는다.
-    if (props.celsius >= 100) {
+        if (props.celsius >= 100) {
         // 100c 이상이면 끟는다는 문자열을 출력
-        return <p>물이 끓습니다.</p>;
-    }
-    //그 외에는 물이 끓지 않는다는 문자열을 출력한다.
-    return <p>물이 끓지 않습니다.</p>;
+            return <p>물이 끓습니다.</p>;
+        }
+        //그 외에는 물이 끓지 않는다는 문자열을 출력한다.
+        return <p>물이 끓지 않습니다.</p>;
     }
 ```
 컴포넌트를 실제로 사용하는 부모 컴포넌트
 ```JavaScript
 // 부모 컴포넌트
-function Calculator(props){
-    const[temperature,setTemperature]=useState('');
-    const handleChange =(event)=>{
-        setTemperature(event.target.value);
+    function Calculator(props){
+        const[temperature,setTemperature]=useState('');
+        const handleChange =(event)=>{
+            setTemperature(event.target.value);
+        }
+        return(
+            <fieldset>
+                <legend>섭씨 온도를 입력하세요:</legend>
+                    <input
+                    value={temperature}
+                    onChange={handleChange}/>
+                    <BoilingVerdict
+                    celsius={parseFloat(temperature)}/>
+            </fieldset>
+        )
     }
-    return(
-        <fieldset>
-            <legend>섭씨 온도를 입력하세요:</legend>
-                <input
-                value={temperature}
-                onChange={handleChange}/>
-                <BoilingVerdict
-                celsius={parseFloat(temperature)}/>
-        </fieldset>
-    )
-}
 ```
 ---
 ### 입력 컴포넌트 추출하기
