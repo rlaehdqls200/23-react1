@@ -1,4 +1,201 @@
 # 201930403 김동빈
+## 2023.05.11(11주차)
+### Shared State
+1. 공유된 State를 의미한다
+1. 하위 컴포넌트가 공통된 부모 컴포넌트의 state를 공유하여 사용하는 것을 Shared State라고 한다.
+---
+
+### 하위 컴포넌트에서 State 공유하기
+사용자로부터 온도를 입력받아서 해당 온도에서 물이 끓는지 출력해주는 컴포넌트이다.
+```JavaScript
+    function BoilingVerdict(props) {
+        //섭씨온도값을 props로 받는다.
+    if (props.celsius >= 100) {
+        // 100c 이상이면 끟는다는 문자열을 출력
+        return <p>물이 끓습니다.</p>;
+    }
+    //그 외에는 물이 끓지 않는다는 문자열을 출력한다.
+    return <p>물이 끓지 않습니다.</p>;
+    }
+```
+컴포넌트를 실제로 사용하는 부모 컴포넌트
+```JavaScript
+// 부모 컴포넌트
+function Calculator(props){
+    const[temperature,setTemperature]=useState('');
+    const handleChange =(event)=>{
+        setTemperature(event.target.value);
+    }
+    return(
+        <fieldset>
+            <legend>섭씨 온도를 입력하세요:</legend>
+                <input
+                value={temperature}
+                onChange={handleChange}/>
+                <BoilingVerdict
+                celsius={parseFloat(temperature)}/>
+        </fieldset>
+    )
+}
+```
+---
+### 입력 컴포넌트 추출하기
+Calculator 컴포넌트 안에 온도를 입력하는 부분을 별도의 컴포넌트로 추출<br>
+* 이렇게 하는 이유는 섭씨온도와 화씨온도를 동시에 따로 입력받을수 있도록 하여<br>
+재사용이 가능한 형태로 컴포넌트를 만드는 것이 효율적이기 때문이다.
+```JavaScript
+//온도를 입력받기 위한 TemperaturerInput 컴포넌트이다.
+
+    const scaleNames = {
+        c: '섭씨',
+        f: '화씨'
+    };
+
+    function TemperatureInput(props) {
+        const [temperature, setTemperature] = useState('');
+
+        const handleChange = (event) => {
+            setTemperature(event.target.value);
+        }
+
+        return (
+            <fieldset>
+            <legend>온도를 입력해 주세요(단위:{scaleNames[props.scale]}):</legend>
+            <input
+                value={temperature}
+                onChange={handleChange}
+            />
+            </fieldset>
+        )
+    }
+```
+
+이렇게 추출한 컴포넌트를 사용하도록 Calculator 컴포넌트를 변경하면 아래와 같이 된다.
+```JavaScript
+    function Calculator(props){
+        return(
+        /*두개의 입력을 받을 수 있도록 되어있고, 하나는 섭씨온도를 입력받고, 하나는 화씨온도를 입력받는다.*/
+            <div>
+            <TemperatureInput scale="c"/>
+            <TemperatureInput scale="f"/>
+            </div>
+        )
+    }
+```
+하지만 문제가 발생하게 된다.<br>
+사용자가 입력하는 온도값이 TemperatureInput 의 state에 저장되기 때문에 두개의 입력값이 동기화 되지 않는다.
+
+---
+### 온도 변환 함수 작성하기
+위 [문제가 발생한 컴포넌트](#입력-컴포넌트-추출하기)에서 섭씨온도와 화씨온도 값을 동기화시키기 위해서 각각 변환하는 함수가 필요하다.
+```JavaScript
+    //화씨 => 섭씨온도로, 섭씨 => 화씨온도로 변환하는 함수이다.
+    function toCelsius(fahrenheit) {
+        return (fahrenheit - 32) * 5 / 9;
+    }
+
+    function toFahrenheit(celcius) {
+        return (celsius * 9 / 5) + 32;
+    }
+```
+이렇게 만든 함수를 호출하는 함수를 작성한다
+```JavaScript
+//온도값과 변환하는 함수를 파라미터로 받아서 값을 변환시켜 리턴해주는 함수이다.
+    function tryConvert(temperature, convert) {
+        const input = parseFloat(temperature);
+            if (Number.isNaN(input)) {
+                return '';
+            }
+        const output = convert(input);
+        const rounded = Math.round(output * 1000) / 1000;
+            return rounded.toString();
+    }
+```
+만약 숫자가 아닌 값을 입력하면 empty string을 리턴하도록 예외 처리를 한다.
+```JavaScript
+tryConvert('abc', toCelsius); // 'empty string 을 리턴'
+tryConvert('10.22', toFahrenheit); // '50.396을 리턴'
+```
+---
+### Shared State 적용하기
+- 다음으로는 하위 컴포넌트의 state를 공통된 부모 컴포넌트로 올려서 shared state를 적용해야한다.
+- 여기서 state를 상위 컴포넌트로 올린다는 것을 State 끌어올리기 라고 표현
+- 이를 위해 먼저 TemperatureInput 컴포넌트에서 온도 값을 가져오는 부분을 수정해야한다.
+```JavaScript
+    return(
+        // 변경 전:<input value={temperature} onChange={handleChange} />
+        <input value={props.temperature} onChange={handleChange} />
+    )
+```
+- 이렇게 하면 온도 값을 컴포넌트의 state에서 가져오는 것이 아닌 props로 가져오게 된다.
+- 컴포넌트의 state를 사용하지 않게 되므로 입력값 변경시 상위 컴포넌트로 변경된 값을 전달 해야 한다.
+- 이를 위해 handleChange 함수를 수정해준다.
+```JavaScript
+    const handleChange = (event) => {
+        // 변경 전: setTemperature(event.target.value);
+        props.onTemperatureChange(event.target.value);
+    }
+```
+- 이제 온도 값을 변경할 때마다 props에 있는 onTemperatureChange()함수를 호출하여 상위 컴포넌트로 변경된 값을 전달해준다.
+- 최종적인 TemperatureInput 컴포넌트의 코드는 아래와 같다.
+```JavaScript
+    function TemperatureInput(props){
+    const handelChange=(event)=>{
+        props.onTemperatureChange(event.target.value);
+    }
+
+    return(
+      <fieldset>
+        <legend>온도를 입력해 주세요(단위:{scaleNames[props.scale]}):</legend>
+
+        <input value={props.temperature} onChange={handleChange} />
+      </fieldset>
+    )
+  }
+```
+---
+### Calculator 컴포넌트 변경하기
+마지막으로 변경된 TemperatureInput 컴포넌트를 사용하도록 Calculator 컴포넌트를 변경해야한다.
+```JavaScript
+    function Calculator(props){
+        //state로 temperature와 scale을 선언하여 온도값과 온도의 단위를 저장한다.
+        const [temperature,setTemperature] = useState('');
+        const [scale,setScale] = useState('c');
+
+        //이 온도와 단위를 이용하여 변환 함수를 통해 섭씨와 화씨온도를 구해서 사용한다.
+        const handleCelsiusChange=(temperature) => {
+            setScale('c');
+            setTemperature(temperature);
+        }
+
+        const handleFahrenheitChange=(temperature) => {
+            setScale('f');
+            setTemperature(temperature);
+        }
+
+        const celsius = scale === 'f' ? tryConvert(temperature, toCelsius) : temperature;
+        const fahrenheit = scale === 'c' ? tryConvert(temperature, toFahrenheit) : temperature;
+
+        return(
+            <div>
+            <TemperatureInput scale = "c" temperature={celsius} onTemperatureChange = {handleCelsiusChange}/>
+            <TemperatureInput scale = "f" temperature={fahrenheit} onTemperatureChange = {handleFahrenheitChange}/>
+            <BoilingVerdict celcius = {parseFloat(celcius)}/>
+            </div>
+        )
+    }
+```
+1. TemperatureInput 컴포넌트를 사용하는 부분에서는 각 단위로 변환된 온도값을 props로 넣어주고,<br>
+값이 변경되었을때 업데이트하기 위한 함수를 onTemperatureChange로 넣어준다.
+1. 따라서 섭씨온도가 변경되면 단위가 'c'로 변경되고, 화씨온도가 변경되면 단위가 'f'로 변경된다.
+---
+### 11주차 메모
+> 1. 모든 컴포넌트에 state가 있는게 아니라 공통된 컴포넌트로 즉, 상위 컴포넌트로 올려서 세팅해버림 
+> 1. 같은 맥락에서 사용하는 컴포넌트들이라면 위에서 정의하고 밑에서 내려 받는게 좋다.
+> 1. 만약 새로운 state가 필요하면 새로운 인풋을 추가해서 상위 컴포넌트로 보내 <b>상위 컴포넌트에서 모두 관리</b>해주는게 좋다.
+> 1. 이 방법을 사용하면 리액트에서 더욱 간결하고 효율적인 코드를 작성할 수 있다.
+---
+---
 ## 2023.05.04(10주차)
 ### 리스트와 키
  
@@ -199,7 +396,7 @@ select태그도 textarea와 동일하다.<br>
 ```
 
 ---
-### 메모
+### 10주차 메모
 
 >1. 원래는 컴포넌트를 만들었으면 App.js에서 improt를 해서 가져오기 때문에 index.js는 건들 일이 없다.<br>
 *App.js에 컴포넌트가 다 모이기 때문에 수정할건 사실상 App.js밖에 없기 때문
@@ -438,7 +635,7 @@ props로 전달 받은 isLoggedln이 true이면 <UserGreeting />을, false면 <G
     }
 ```
 ---
-### 메모
+### 9주차 메모
 > 1. React에서는 Pascalcase를 사용하며, 첫 문자를 대문자로 사용한다.<br>
 > 1. 문자와 문자사이에 언더바(_)가 들어가는걸스네이크 함수라고 한다.
 > 1. 배열은 자료구조가 아닌 스택이나 큐 같은 자료를 구현하기 위한것
