@@ -136,7 +136,7 @@ tryConvert('10.22', toFahrenheit); // '50.396을 리턴'
         props.onTemperatureChange(event.target.value);
     }
 ```
-- 이제 온도 값을 변경할 때마다 props에 있는 onTemperatureChange()함수를 호출하여 상위 컴포넌트로 변경된 값을 전달해준다.
+- 이제 온도 값을 변경할 때마다 props에 있는<br> onTemperatureChange()함수를 호출하여 상위 컴포넌트로 변경된 값을 전달해준다.
 - 최종적인 TemperatureInput 컴포넌트의 코드는 아래와 같다.
 ```JavaScript
     function TemperatureInput(props){
@@ -192,7 +192,7 @@ tryConvert('10.22', toFahrenheit); // '50.396을 리턴'
 ### 11주차 메모
 > 1. 모든 컴포넌트에 state가 있는게 아니라 공통된 컴포넌트로 즉, 상위 컴포넌트로 올려서 세팅해버림 
 > 1. 같은 맥락에서 사용하는 컴포넌트들이라면 위에서 정의하고 밑에서 내려 받는게 좋다.
-> 1. 만약 새로운 state가 필요하면 새로운 인풋을 추가해서 상위 컴포넌트로 보내 <b>상위 컴포넌트에서 모두 관리</b>해주는게 좋다.
+> 1. 만약 새로운 state가 필요하면 새로운 인풋을 추가해서 상위 컴포넌트로 보내 <br><b>상위 컴포넌트에서 모두 관리</b>해주는게 좋다.
 > 1. 이 방법을 사용하면 리액트에서 더욱 간결하고 효율적인 코드를 작성할 수 있다.
 ---
 ---
